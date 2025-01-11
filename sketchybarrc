@@ -1,0 +1,119 @@
+PLUGIN_DIR="$CONFIG_DIR/plugins"
+
+FONT="SF Pro"
+PADDINGS=3
+
+POPUP_BORDER_WIDTH=2
+POPUP_CORNER_RADIUS=11
+
+SHADOW=on
+
+POPUP_OFF="sketchybar --set apple.log popup.drawing=off"
+POPUP_CLICK_SCRIPT="sketchybar --set \$NAME popup.drawing=toggle"
+
+# Color Palette
+BLACK=0xff181926
+WHITE=0xffcad3f5
+RED=0xffed8796
+GREEN=0xffa6da95
+BLUE=0xff8aadf4
+YELLOW=0xffeed49f
+ORANGE=0xfff5a97f
+MAGENTA=0xffc6a0f6
+GREY=0xff939ab7
+TRANSPARENT=0x00000000
+
+# General bar colors
+BAR_COLOR=0xcc24273a
+ICON_COLOR=$WHITE
+LABEL_COLOR=$WHITE
+
+POPUP_BACKGROUND_COLOR=$BLACK
+POPUP_BORDER_COLOR=$WHITE
+
+SHADOW_COLOR=$BLACK
+
+sketchybar --bar position=right \
+                 height=50 \
+                 blur_radius=20 \
+                 color=$BAR_COLOR \
+                 shadow=$SHADOW \
+                 sticky=on \
+                 padding_right=18 \
+                 padding_left=18 \
+                 corner_radius=9 \
+                 y_offset=10 \
+                 margin=10 \
+           --default updates=when_shown \
+                     icon.font="$FONT:Bold:14.0" \
+                     icon.color=$ICON_COLOR \
+                     icon.padding_left=$PADDINGS \
+                     icon.padding_right=$PADDINGS \
+                     label.font="$FONT:Semibold:13.0" \
+                     label.color=$LABEL_COLOR \
+                     label.padding_left=$PADDINGS \
+                     label.padding_right=$PADDINGS \
+                     background.padding_left=$PADDINGS \
+                     background.padding_right=$PADDINGS \
+                     popup.background.border_width=2 \
+                     popup.background.corner_radius=11 \
+                     popup.background.border_color=$POPUP_BORDER_COLOR \
+                     popup.background.color=$POPUP_BACKGROUND_COLOR \
+                     popup.background.shadow.drawing=$SHADOW
+
+
+##### Adding Left Items #####
+# We add some regular items to the left side of the bar, where
+# only the properties deviating from the current defaults need to be set
+
+sketchybar --add item apple.logo left \
+           --set apple.logo icon= \
+                            icon.font="$FONT:Black:16.0" \
+                            icon.color=$GREEN \
+                            background.padding_left=15 \
+                            label.drawing=off \
+
+sketchybar --add event aerospace_workspace_change
+RED=0xFFED8796
+for sid in $(aerospace list-workspaces --all); do
+  sketchybar --add item "space.$sid" left \
+             --subscribe "space.$sid" aerospace_workspace_change \
+             --set "space.$sid" \
+             icon="$sid" \
+                      icon.padding_left=22 \
+                      icon.padding_right=22 \
+                      label.padding_right=33 \
+                      icon.highlight_color=$RED \
+                      background.color=0x44ffffff \
+                      background.corner_radius=5 \
+                      background.height=30 \
+                      background.drawing=off \
+                      label.font="sketchybar-app-font:Regular:16.0" \
+                      label.background.height=30 \
+                      label.background.drawing=on \
+                      label.background.color=0xff494d64 \
+                      label.background.corner_radius=9 \
+                      label.drawing=off \
+             click_script="aerospace workspace $sid" \
+             script="$PLUGIN_DIR/aerospace.sh $sid"
+done
+
+##### Adding Right Items #####
+# In the same way as the left items we can add items to the right side.
+# Additional position (e.g. center) are available, see:
+# https://felixkratz.github.io/SketchyBar/config/items#adding-items-to-sketchybar
+
+# Some items refresh on a fixed cycle, e.g. the clock runs its script once
+# every 10s. Other items respond to events they subscribe to, e.g. the
+# volume.sh script is only executed once an actual change in system audio
+# volume is registered. More info about the event system can be found here:
+# https://felixkratz.github.io/SketchyBar/config/events
+
+sketchybar --add item clock right \
+           --set clock update_freq=10 script="$PLUGIN_DIR/clock.sh" \
+           --add item battery right \
+           --set battery update_freq=120 script="$PLUGIN_DIR/battery.sh" \
+           --subscribe battery system_woke power_source_change
+
+##### Force all scripts to run the first time (never do this in a script) #####
+sketchybar --update
