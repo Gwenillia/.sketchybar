@@ -4,7 +4,8 @@
 AIRPODS_NAME="GweniPods"
 
 # Fetch the Bluetooth status for the AirPods
-AIRPODS_STATUS=$(system_profiler SPBluetoothDataType | grep -A 5 "$AIRPODS_NAME" | grep "Right")
+AIRPODS_STATUS=$(system_profiler SPBluetoothDataType | awk '/Connected:/,/Not Connected:/ {if ($0 !~ /Not Connected:/) print}' | grep "$AIRPODS_NAME")
+
 
 # Define the AirPods icon
 ICON="􀪷"  # AirPods icon
